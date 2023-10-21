@@ -5,18 +5,22 @@
 B64CHECK="^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$"
 
 if [[ -z $1 ]]; then echo "Cannot run without arguments"; exit 1; fi
-if [[ $# < 4 ]]; then echo "One or more crunner arguments is missing!"; exit 2; fi
+if [[ $# < 5 ]]; then echo "One or more crunner arguments is missing!"; exit 2; fi
 if [[ ! $1 =~ $B64CHECK ]]; then echo "The command or engine must be base64 encoded!"; exit 3; fi
 if [[ ! $2 =~ $B64CHECK ]]; then echo "The arguments must be base64 encoded!"; exit 4; fi
 if [[ ! $3 =~ $B64CHECK ]]; then echo "The extension must be base64 encoded!"; exit 5; fi
 if [[ ! $4 =~ $B64CHECK ]]; then echo "The code must be base64 encoded!"; exit 6; fi
+if [[ ! $5 =~ $B64CHECK ]]; then echo "The isjson must be base64 encoded!"; exit 7; fi
 
 #Define the variable that represents the engine binary name
 COMMAND=$(echo $1 | base64 -d)
 ARGS=$(echo $2 | base64 -d)
 EXT=$(echo $3 | base64 -d)
 CODEB64=$4
+ISJSON="$(echo $5 | base64 -d)"
+
 CODE="$(echo $CODEB64 | base64 -d)"
+
 
 #Generate a UUID
 UUID=$(uuidgen -r)
@@ -28,6 +32,7 @@ CODEB64FILE="$COLLECTION/$UUID/code.b64.$EXT"
 CODEERRFILE="$COLLECTION/$UUID/code.$EXT.err"
 CODERESJSON="$COLLECTION/$UUID/code.$EXT.result.json"
 CODETIMJSON="$COLLECTION/$UUID/code.$EXT.time.json"
+CODEOUTPUT="$COLLECTION/$UUID/code.$EXT.output.txt"
 RECEIVEDARGS="$COLLECTION/$UUID/crunner.received.args.log"
 
 #Create code collection folder
@@ -47,7 +52,13 @@ echo "$CODE" > $CODEFILE
 
 
 #CODE=$1
-{ time $(echo $COMMAND $ARGS) $CODEFILE > $CODERESJSON; } 2> $CODEERRFILE
+{ time $(echo $COMMAND $ARGS) $CODEFILE > $CODEOUTPUT; } 2> $CODEERRFILE
+
+if [[ $ISJSON == "true" ]]; then
+    cp $CODEOUTPUT $CODERESJSON
+else
+    echo "{}" | jq --arg output "$(<$CODEOUTPUT)" '.string += $output' > $CODERESJSON
+fi
 
 CHKERR=$(wc -l $CODEERRFILE | awk '{print $1}')
 
