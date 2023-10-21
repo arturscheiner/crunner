@@ -5,10 +5,11 @@
 B64CHECK="^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$"
 
 if [[ -z $1 ]]; then echo "Cannot run without arguments"; exit 1; fi
-if [[ ! $1 =~ $B64CHECK ]]; then echo "The command or engine must be base64 encoded!"; exit 1; fi
-if [[ ! $2 =~ $B64CHECK ]]; then echo "The arguments must be base64 encoded!"; exit 2; fi
-if [[ ! $3 =~ $B64CHECK ]]; then echo "The extension must be base64 encoded!"; exit 3; fi
-if [[ ! $4 =~ $B64CHECK ]]; then echo "The code must be base64 encoded!"; exit 4; fi
+if [[ $# < 4 ]]; then echo "One or more crunner arguments is missing!"; exit 2; fi
+if [[ ! $1 =~ $B64CHECK ]]; then echo "The command or engine must be base64 encoded!"; exit 3; fi
+if [[ ! $2 =~ $B64CHECK ]]; then echo "The arguments must be base64 encoded!"; exit 4; fi
+if [[ ! $3 =~ $B64CHECK ]]; then echo "The extension must be base64 encoded!"; exit 5; fi
+if [[ ! $4 =~ $B64CHECK ]]; then echo "The code must be base64 encoded!"; exit 6; fi
 
 #Define the variable that represents the engine binary name
 COMMAND=$(echo $1 | base64 -d)
