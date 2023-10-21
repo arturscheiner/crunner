@@ -27,6 +27,9 @@ CODEB64FILE="$COLLECTION/$UUID/code.b64.$EXT"
 CODEERRFILE="$COLLECTION/$UUID/code.$EXT.err"
 CODERESJSON="$COLLECTION/$UUID/code.$EXT.result.json"
 CODETIMJSON="$COLLECTION/$UUID/code.$EXT.time.json"
+RECEIVEDARGS="$COLLECTION/$UUID/crunner.received.args.log"
+
+echo $@ > $RECEIVEDARGS
 
 #Create code collection folder
 mkdir -p $COLLECTION/$UUID
