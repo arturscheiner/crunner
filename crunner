@@ -33,7 +33,7 @@ RECEIVEDARGS="$COLLECTION/$UUID/crunner.received.args.log"
 mkdir -p $COLLECTION/$UUID
 
 #Echoes the received arguments to a log file
-echo ${@} $@ > $RECEIVEDARGS
+echo $# $@ > $RECEIVEDARGS
 
 #Generates a file on the temp dir of the remote host enconded in b64
 echo "$CODEB64" > $CODEB64FILE
