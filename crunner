@@ -29,10 +29,11 @@ CODERESJSON="$COLLECTION/$UUID/code.$EXT.result.json"
 CODETIMJSON="$COLLECTION/$UUID/code.$EXT.time.json"
 RECEIVEDARGS="$COLLECTION/$UUID/crunner.received.args.log"
 
-echo $@ > $RECEIVEDARGS
-
 #Create code collection folder
 mkdir -p $COLLECTION/$UUID
+
+#Echoes the received arguments to a log file
+echo $@ > $RECEIVEDARGS
 
 #Generates a file on the temp dir of the remote host enconded in b64
 echo "$CODEB64" > $CODEB64FILE
