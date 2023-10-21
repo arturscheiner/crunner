@@ -46,7 +46,7 @@ if [ $CHKERR == 4 ]; then
     #jq --argjson time "$(<$CODE.time.json)" '.time += [$time]' $CODE.result.json
 
     #com uuid
-    jq --arg uuid "$UUID" --argjson time "$(<$CODETIMJSON)" '.time += [$time] | .uuid += $uuid' $CODETIMJSON
+    jq --arg uuid "$UUID" --argjson time "$(<$CODETIMJSON)" '.time += [$time] | .uuid += $uuid' $CODERESJSON
 
     #rm $CODE.time.json $CODE.result.json $CODE.time.txt
 
