@@ -1,0 +1,55 @@
+#!/bin/bash
+
+#Define the variable that represents the engine binary name
+COMMAND=$(echo $1 | base64 -d)
+ARGS=$(echo $2 | base64 -d)
+EXT=$(echo $3 | base64 -d)
+CODEB64=$4
+CODE="$(echo $CODEB64 | base64 -d)"
+
+#Generate a UUID
+UUID=$(uuidgen -r)
+
+#Collection PATH
+COLLECTION="$HOME/.coderuns/$COMMAND"
+CODEFILE="$COLLECTION/$UUID/code.$EXT"
+CODEB64FILE="$COLLECTION/$UUID/code.b64.$EXT"
+CODEERRFILE="$COLLECTION/$UUID/code.$EXT.err"
+CODERESJSON="$COLLECTION/$UUID/code.$EXT.result.json"
+CODETIMJSON="$COLLECTION/$UUID/code.$EXT.time.json"
+
+#Create code collection folder
+mkdir -p $COLLECTION/$UUID
+
+#Generates a file on the temp dir of the remote host enconded in b64
+echo "$CODEB64" > $CODEB64FILE
+
+#Convert the encoded b64 a code file on the username home directory
+echo "$CODE" > $CODEFILE
+
+#Execute the code using its engine and arguments
+#time $(echo $COMMAND) {{ capsule.args }} $COLLECTION/$UUID/code.{{ capsule.ext }}
+
+
+#CODE=$1
+
+{ time $(echo $COMMAND $ARGS) $CODEFILE > $CODERESJSON; } 2> $CODEERRFILE
+
+CHKERR=$(wc -l $CODEERRFILE | awk '{print $1}')
+
+if [ $CHKERR == 4 ]; then
+
+    sed -i 's/\t/,/g;/^$/d' $CODEERRFILE
+
+    awk -F, '{ print "{\""$1"\""":" "\""$2"\"}"}' $CODEERRFILE | jq -s add > $CODETIMJSON
+
+    #jq --argjson time "$(<$CODE.time.json)" '.time += [$time]' $CODE.result.json
+
+    #com uuid
+    jq --arg uuid "$UUID" --argjson time "$(<$CODETIMJSON)" '.time += [$time] | .uuid += $uuid' $CODETIMJSON
+
+    #rm $CODE.time.json $CODE.result.json $CODE.time.txt
+
+else
+    >&2 cat $CODEERRFILE
+fi
