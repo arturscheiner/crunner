@@ -1,5 +1,6 @@
 #!/bin/bash
-#set -e
+#Code Runner Script
+#By Artur Scheiner
 
 #Check if the input arguments are base64 encoded
 B64CHECK="^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$"
@@ -50,12 +51,9 @@ echo "$CODEB64" > $CODEB64FILE
 echo "$CODE" > $CODEFILE
 
 #Execute the code using its engine and arguments
-#time $(echo $COMMAND) {{ capsule.args }} $COLLECTION/$UUID/code.{{ capsule.ext }}
-
-
-#CODE=$1
 { time $(echo $COMMAND $ARGS) $CODEFILE $CODEARGS > $CODEOUTPUT; } 2> $CODEERRFILE
 
+#Use the ISJSON variable to deal with the output
 if [[ $ISJSON == "true" ]]; then
     cp $CODEOUTPUT $CODERESJSON
 else
@@ -65,19 +63,9 @@ fi
 CHKERR=$(wc -l $CODEERRFILE | awk '{print $1}')
 
 if [ $CHKERR == 4 ]; then
-
     sed -i 's/\t/,/g;/^$/d' $CODEERRFILE
-
     awk -F, '{ print "{\""$1"\""":" "\""$2"\"}"}' $CODEERRFILE | jq -s add > $CODETIMJSON
-
-    #jq --argjson time "$(<$CODE.time.json)" '.time += [$time]' $CODE.result.json
-
-    #com uuid
-#    jq --arg uuid "$UUID" --argjson time "$(<$CODETIMJSON)" '.time += [$time] | .uuid += $uuid' $CODERESJSON
     echo "{}" | jq --arg uuid "$UUID" --argjson output "$(<$CODERESJSON)" --argjson time "$(<$CODETIMJSON)" '.output += $output | .time += $time | .uuid += $uuid'
-
-    #rm $CODE.time.json $CODE.result.json $CODE.time.txt
-    #Comments
 else
     >&2 cat $CODEERRFILE
 fi
